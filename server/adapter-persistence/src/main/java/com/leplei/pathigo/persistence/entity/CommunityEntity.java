@@ -3,11 +3,12 @@ package com.leplei.pathigo.persistence.entity;
 import com.leplei.pathigo.domain.Community;
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table
+@Table(name = "community")
 public class CommunityEntity {
 
     @Id
@@ -20,12 +21,14 @@ public class CommunityEntity {
     private String description;
     @Column(nullable = true)
     private String avatar;
-    @Column(nullable = false)
-    private Date createdAt;
-    @Column(nullable = false)
-    private Date updatedAt;
 
-    public CommunityEntity(UUID id, String name, String description, String avatar, Date createdAt, Date updatedAt) {
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    public CommunityEntity(UUID id, String name, String description, String avatar, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -78,19 +81,19 @@ public class CommunityEntity {
         this.avatar = avatar;
     }
 
-    public Date getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 

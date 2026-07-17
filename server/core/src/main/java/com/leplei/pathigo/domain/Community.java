@@ -1,7 +1,7 @@
 package com.leplei.pathigo.domain;
 
+import java.time.Instant;
 import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
 
 public class Community {
@@ -11,8 +11,8 @@ public class Community {
     private final String description;
     private final String avatar;
 
-    private final Date createdAt;
-    private final Date updatedAt;
+    private final Instant createdAt;
+    private final Instant updatedAt;
 
     public UUID getId() {
         return id;
@@ -30,11 +30,11 @@ public class Community {
         return avatar;
     }
 
-    public Date getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public Instant getUpdatedAt() {
         return updatedAt;
     }
 
@@ -52,8 +52,8 @@ public class Community {
         private String name;
         private String description;
         private String avatar;
-        private Date createdAt;
-        private Date updatedAt;
+        private Instant createdAt;
+        private Instant updatedAt;
 
         public Builder id(UUID id) {
             this.id = id;
@@ -75,12 +75,12 @@ public class Community {
             return this;
         }
 
-        public Builder createdAt(Date createdAt) {
+        public Builder createdAt(Instant createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        public Builder updatedAt(Date updatedAt) {
+        public Builder updatedAt(Instant updatedAt) {
             this.updatedAt = updatedAt;
             return this;
         }
