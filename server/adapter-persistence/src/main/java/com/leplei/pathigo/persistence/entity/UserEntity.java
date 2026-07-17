@@ -92,4 +92,15 @@ public class UserEntity {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public User toDomain() {
+        return new User.Builder()
+                .id(id)
+                .email(email)
+                .username(username)
+                .password(password)
+                .nickname(nickname)
+                .phoneNumber(phoneNumber)
+                .build();
+    }
 }

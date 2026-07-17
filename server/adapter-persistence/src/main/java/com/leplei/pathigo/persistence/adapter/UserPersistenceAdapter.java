@@ -32,6 +32,12 @@ public class UserPersistenceAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return jpaUserRepository.findByEmail(email)
+                .map(UserEntity::toDomain);
+    }
+
+    @Override
     public void save(User user) {
         UserEntity entity = new UserEntity(user);
         jpaUserRepository.save(entity);
@@ -41,15 +47,7 @@ public class UserPersistenceAdapter implements UserRepository {
     public List<User> findAll() {
         var users = jpaUserRepository.findAll();
         return users.stream()
-                .map(u ->
-                        new User.Builder()
-                                .id(u.getId())
-                                .email(u.getEmail())
-                                .username(u.getUsername())
-                                .password(u.getPassword())
-                                .nickname(u.getNickname())
-                                .phoneNumber(u.getPhoneNumber())
-                                .build())
+                .map(UserEntity::toDomain)
                 .toList();
     }
 }

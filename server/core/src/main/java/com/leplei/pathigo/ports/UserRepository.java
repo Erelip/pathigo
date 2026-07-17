@@ -10,6 +10,8 @@ public interface UserRepository {
 
     Optional<User> findById(UUID id);
 
+    Optional<User> findByEmail(String email);
+
     void save(User user);
 
     List<User> findAll();
