@@ -10,6 +10,8 @@ public class User {
     private final String password;
     private final String nickname;
     private final String phoneNumber;
+    private final String provider;
+    private final String providerId;
 
     private User(Builder builder) {
         this.id = builder.id;
@@ -18,6 +20,8 @@ public class User {
         this.password = builder.password;
         this.nickname = builder.nickname;
         this.phoneNumber = builder.phoneNumber;
+        this.provider = builder.provider;
+        this.providerId = builder.providerId;
     }
 
     public UUID getId() {
@@ -44,6 +48,14 @@ public class User {
         return phoneNumber;
     }
 
+    public String getProvider() {
+        return provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -56,6 +68,8 @@ public class User {
         private String password;
         private String nickname;
         private String phoneNumber;
+        private String provider;
+        private String providerId;
 
         public Builder id(UUID id) {
             this.id = id;
@@ -84,6 +98,16 @@ public class User {
 
         public Builder phoneNumber(String phoneNumber) {
             this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public Builder provider(String provider) {
+            this.provider = provider;
+            return this;
+        }
+
+        public Builder providerId(String providerId) {
+            this.providerId = providerId;
             return this;
         }
 

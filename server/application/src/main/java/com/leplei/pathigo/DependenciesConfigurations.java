@@ -8,13 +8,19 @@ import com.leplei.pathigo.persistence.repository.JpaUserRepository;
 import com.leplei.pathigo.ports.PasswordHasher;
 import com.leplei.pathigo.ports.TokenProvider;
 import com.leplei.pathigo.ports.UserRepository;
-import com.leplei.pathigo.security.CustomUserDetailsService;
 import com.leplei.pathigo.security.JwtService;
 import com.leplei.pathigo.services.AuthenticationService;
+import com.leplei.pathigo.usecases.GetUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 public class DependenciesConfigurations {
@@ -22,8 +28,11 @@ public class DependenciesConfigurations {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
-    @Value("${security.jwt.expiration-ms}")
-    private Long expirationMs;
+    @Value("${security.jwt.access.expiration-ms}")
+    private Long accessExpirationMs;
+
+    @Value("${security.jwt.refresh.expiration-ms}")
+    private Long refreshExpirationMs;
 
     @Bean
     public UserRepository userRepository(
@@ -33,17 +42,29 @@ public class DependenciesConfigurations {
     }
 
     @Bean
+    public GetUser GetUser(
+            UserRepository userRepository
+    ) {
+        return new GetUser(userRepository);
+    }
+
+    @Bean
     public JwtService jwtService() {
-        return new JwtService(secretKey, expirationMs);
+        return new JwtService(secretKey, accessExpirationMs, refreshExpirationMs);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public AuthenticationService authenticationService(
-            UserRepository userRepository,
+            GetUser getUser,
             PasswordHasher passwordHasher,
             TokenProvider tokenProvider
     ) {
-        return new AuthenticationService(userRepository, passwordHasher, tokenProvider);
+        return new AuthenticationService(getUser, passwordHasher, tokenProvider);
     }
 
     @Bean
@@ -61,17 +82,32 @@ public class DependenciesConfigurations {
     }
 
     @Bean
-    public CustomUserDetailsService customUserDetailsService(
-            UserRepository userRepository
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtService jwtService,
+            GetUser getUser
     ) {
-        return new CustomUserDetailsService(userRepository);
+        return new JwtAuthenticationFilter(jwtService, getUser);
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(
-            JwtService jwtService,
-            CustomUserDetailsService customUserDetailsService
-    ) {
-        return new JwtAuthenticationFilter(jwtService, customUserDetailsService);
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOrigins(
+                List.of("http://localhost:3000")
+        );
+        config.setAllowedMethods(
+                List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+        );
+        config.setAllowedHeaders(
+                List.of("Content-Type", "X-CSRF-TOKEN")
+        );
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

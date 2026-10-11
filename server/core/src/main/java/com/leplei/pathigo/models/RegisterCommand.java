@@ -5,5 +5,7 @@ public record RegisterCommand(
         String username,
         String password,
         String nickname,
-        String phoneNumber
+        String phoneNumber,
+        String provider,
+        String providerId
 ) { }

@@ -15,22 +15,28 @@ public class UserEntity {
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = true)
     private String username;
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", nullable = true)
     private String password;
     @Column(name = "nickname", nullable = false)
     private String nickname;
-    @Column(name = "phoneNumber", nullable = false)
+    @Column(name = "phoneNumber", nullable = true)
     private String phoneNumber;
+    @Column(name = "provider", nullable = true)
+    private String provider;;
+    @Column(name = "providerId", nullable = true)
+    private String providerId;
 
-    public UserEntity(UUID id, String email, String username, String password, String nickname, String phoneNumber) {
+    public UserEntity(UUID id, String email, String username, String password, String nickname, String phoneNumber, String provider, String providerId) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
         this.nickname = nickname;
         this.phoneNumber = phoneNumber;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     public UserEntity(User user) {
@@ -40,6 +46,8 @@ public class UserEntity {
         this.password = user.getPassword();
         this.nickname = user.getNickname();
         this.phoneNumber = user.getPhoneNumber();
+        this.provider = user.getProvider();
+        this.providerId = user.getProviderId();
     }
 
     public UserEntity() {
@@ -93,6 +101,22 @@ public class UserEntity {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
     public User toDomain() {
         return new User.Builder()
                 .id(id)
@@ -101,6 +125,8 @@ public class UserEntity {
                 .password(password)
                 .nickname(nickname)
                 .phoneNumber(phoneNumber)
+                .provider(provider)
+                .providerId(providerId)
                 .build();
     }
 }

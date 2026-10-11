@@ -1,27 +1,31 @@
 package com.leplei.pathigo.services;
 
 import com.leplei.pathigo.domain.User;
+import com.leplei.pathigo.models.AuthTokens;
 import com.leplei.pathigo.models.RegisterCommand;
 import com.leplei.pathigo.ports.PasswordHasher;
 import com.leplei.pathigo.ports.TokenProvider;
-import com.leplei.pathigo.ports.UserRepository;
 import com.leplei.pathigo.exceptions.EmailAlreadyExistsException;
 import com.leplei.pathigo.exceptions.InvalidCredentialsException;
+import com.leplei.pathigo.usecases.GetUser;
+
+import java.util.Optional;
 
 public class AuthenticationService {
 
-    private final UserRepository userRepository;
+    private final GetUser getUser;
     private final PasswordHasher passwordHasher;
     private final TokenProvider tokenProvider;
+    private final String PROVIDER = "GOOGLE";
 
-    public AuthenticationService(UserRepository userRepository, PasswordHasher passwordHasher, TokenProvider tokenProvider) {
-        this.userRepository = userRepository;
+    public AuthenticationService(GetUser getUser, PasswordHasher passwordHasher, TokenProvider tokenProvider) {
+        this.getUser = getUser;
         this.passwordHasher = passwordHasher;
         this.tokenProvider = tokenProvider;
     }
 
-    public String login(String email, String rawPassword) {
-        User user = userRepository.findByEmail(email)
+    public AuthTokens login(String email, String rawPassword) {
+        User user = getUser.findByEmail(email)
                 .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordHasher.matches(rawPassword, user.getPassword())) {
@@ -31,8 +35,8 @@ public class AuthenticationService {
         return tokenProvider.generateToken(user);
     }
 
-    public String register(RegisterCommand command) {
-        if (userRepository.findByEmail(command.email()).isPresent()) {
+    public AuthTokens register(RegisterCommand command) {
+        if (getUser.findByEmail(command.email()).isPresent()) {
             throw new EmailAlreadyExistsException(command.email());
         }
 
@@ -43,8 +47,36 @@ public class AuthenticationService {
                 .nickname(command.nickname())
                 .phoneNumber(command.phoneNumber())
                 .build();
-        userRepository.save(user);
+
+        getUser.save(user);
 
         return tokenProvider.generateToken(user);
+    }
+
+    public AuthTokens loginOrRegisterGoogle(String googleSubject, String email, String fullName) {
+        Optional<User> user = getUser.findByEmail(email);
+
+        if (user.isPresent()) {
+            return tokenProvider.generateToken(user.get());
+        }
+
+        User newUser = User.builder()
+                .email(email)
+                .nickname(fullName)
+                .provider(PROVIDER)
+                .providerId(googleSubject)
+                .build();
+        getUser.save(newUser);
+
+        return  tokenProvider.generateToken(newUser);
+    }
+
+    public AuthTokens refresh(String token) {
+        AuthTokens tokens = tokenProvider.refreshToken(token);
+        if (tokens == null) {
+            throw new InvalidCredentialsException();
+        }
+
+        return tokens;
     }
 }

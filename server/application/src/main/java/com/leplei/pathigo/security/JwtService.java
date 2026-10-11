@@ -1,5 +1,6 @@
 package com.leplei.pathigo.security;
 
+import com.leplei.pathigo.models.AuthTokens;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -15,29 +16,39 @@ import java.util.function.Function;
 public class JwtService {
 
     private final SecretKey signingKey;
-    private final long expirationMillis;
+    private final long accessExpirationMillis;
+    private final long refreshExpirationMillis;
 
     public JwtService(
             @Value("${security.jwt.secret-key}") String secretKey,
-            @Value("${security.jwt.expiration-ms}") long expirationMillis
+            @Value("${security.jwt.access.expiration-ms}") long accessExpirationMillis,
+            @Value("${security.jwt.refresh.expiration-ms}") long refreshExpirationMillis
     ) {
         this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-        this.expirationMillis = expirationMillis;
+        this.accessExpirationMillis = accessExpirationMillis;
+        this.refreshExpirationMillis = refreshExpirationMillis;
     }
 
-    public String generateToken(String username) {
+    public AuthTokens generateToken(String username) {
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + expirationMillis);
+        Date accessExpiry = new Date(now.getTime() + accessExpirationMillis);
+        Date refreshExpiry = new Date(now.getTime() + refreshExpirationMillis);
 
-        var jwt = Jwts.builder()
+        var accessToken = Jwts.builder()
                 .subject(username)
                 .issuedAt(now)
-                .expiration(expiry)
+                .expiration(accessExpiry)
                 .signWith(signingKey)
                 .compact();
 
-        System.out.println(jwt);
-        return jwt;
+        var refreshToken = Jwts.builder()
+                .subject(username)
+                .issuedAt(now)
+                .expiration(refreshExpiry)
+                .signWith(signingKey)
+                .compact();
+
+        return new AuthTokens(accessToken, refreshToken);
     }
 
     public String extractUsername(String token) {
@@ -60,4 +71,5 @@ public class JwtService {
                 .getPayload();
         return resolver.apply(claims);
     }
+
 }
